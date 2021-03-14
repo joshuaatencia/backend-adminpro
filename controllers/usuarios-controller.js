@@ -1,25 +1,38 @@
-const Usuario = require("../models/usuario");
+const Usuario = require("../models/usuarios-model");
 const response = require("express");
 var bcrypt = require("bcryptjs");
-const generarJWT = require("../helper/jwt")
+const { generarJWT } = require("../helper/jwt");
 
 const getUsuarios = async (req, res) => {
-  const usuario = await Usuario.find();
+  const desde = Number(req.query.desde) || 0;
+
+  const[usuarios, total] = await Promise.all([
+     Usuario.find({}, "nombre email role google img")
+    .skip(desde)
+    .limit(5),
+
+      Usuario.countDocuments()
+  ]);
+
+  
 
   res.json({
     ok: true,
-    usuario,
+    usuarios,
+    total
   });
 };
 
 const crearUsuario = async (req, res = response) => {
-  const { email, password, nombre } = req.body;
+  const { email, password } = req.body;
+
   try {
     const existeEmail = await Usuario.findOne({ email });
+
     if (existeEmail) {
       return res.status(400).json({
         ok: false,
-        msg: "El correo ya esta registrado",
+        msg: "El correo ya está registrado",
       });
     }
 
@@ -29,18 +42,19 @@ const crearUsuario = async (req, res = response) => {
     const salt = bcrypt.genSaltSync();
     usuario.password = bcrypt.hashSync(password, salt);
 
+    // Guardar usuario
     await usuario.save();
 
-    // generar token
+    // Generar el TOKEN - JWT
     const token = await generarJWT(usuario.id);
 
     res.json({
       ok: true,
       usuario,
-      token
+      token,
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({
       ok: false,
       msg: "Error inesperado... revisar logs",
@@ -97,7 +111,6 @@ const borrarUsuario = async (req, res = response) => {
   const uid = req.params.id;
 
   try {
-
     const usuarioDB = await Usuario.findById(uid);
 
     if (!usuarioDB) {
@@ -109,10 +122,9 @@ const borrarUsuario = async (req, res = response) => {
 
     await Usuario.findByIdAndDelete(uid);
 
-
     res.json({
-      ok:true,
-      msg: 'Usuario eliminado'
+      ok: true,
+      msg: "Usuario eliminado",
     });
   } catch (error) {
     console.error(error);
