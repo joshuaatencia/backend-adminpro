@@ -56,11 +56,11 @@ const googleSignIn = async (req, res = response) => {
       usuario = new Usuario({
         nombre: name,
         email,
-        password: '@@@',
-        img:picture,
-        google: true
+        password: "@@@",
+        img: picture,
+        google: true,
       });
-    }else{
+    } else {
       usuario = usuarioDB;
       usuario.google = true;
     }
@@ -73,7 +73,7 @@ const googleSignIn = async (req, res = response) => {
 
     res.json({
       ok: true,
-      token
+      token,
     });
   } catch (error) {
     res.status(401).json({
@@ -83,4 +83,17 @@ const googleSignIn = async (req, res = response) => {
   }
 };
 
-module.exports = { login, googleSignIn };
+const renewToken = async(req, res = response) => {
+
+  const uid = req.uid;
+
+   // generar token
+   const token = await generarJWT(uid);
+
+  res.json({
+    ok: true,
+    uid
+  });
+};
+
+module.exports = { login, googleSignIn, renewToken };
