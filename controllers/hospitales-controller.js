@@ -2,11 +2,14 @@ const { response } = require("express");
 const Hospital = require("../models/hospitales-model");
 
 const getHospitales = async (req, res = response) => {
-  const hospitales = await Hospital.find().populate("usuario", "nombre img");
+  const hospitales = await Hospital.find()
+                                    .populate('usuario','nombre img');
+
+  console.log(hospitales);
 
   res.json({
     ok: true,
-    msg: "getHospitales",
+    hospitales,
   });
 };
 
@@ -91,8 +94,6 @@ const borrarHospital = async (req, res = response) => {
       ok: true,
       msg: "hospital eliminado",
     });
-
-
   } catch (error) {
     console.error(error);
     res.status(500).json({
