@@ -23,4 +23,4 @@ HostipalSchema.method("toJSON", function () {
     return object;
 });
 
-module.exports = model("Hospital", HostipalSchema);
+module.exports = model( "Hospital", HostipalSchema );
